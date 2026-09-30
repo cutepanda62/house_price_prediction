@@ -1,0 +1,7 @@
+pycache
+*.pyc
+*.pyo
+.git
+.gitignore
+.env
+Dockerfile
