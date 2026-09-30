@@ -1,0 +1,11 @@
+nisha/
+bin/
+include/
+lib/
+__pycache__/
+*.pyc
+mlartifacts/
+mlflow.db
+.env
+.DS_Store
+Dockerfile
