@@ -8,4 +8,3 @@ mlartifacts/
 mlflow.db
 .env
 .DS_Store
-Dockerfile

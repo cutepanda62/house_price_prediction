@@ -35,14 +35,14 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/house_price_prediction:latest .
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/house-price-predictor:latest .
 
 
       # 5. Push Docker image to Docker Hub
       - name: Push Docker image
         run: |
           docker push \
-            ${{ secrets.DOCKERHUB_USERNAME }}/house_price_prediction:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/house-price-predictor:latest
 
 
   # ============================================================
@@ -74,21 +74,21 @@ jobs:
             # -----------------------------------------------
 
             docker pull \
-              ${{ secrets.DOCKERHUB_USERNAME }}/house_price_prediction:latest
+              ${{ secrets.DOCKERHUB_USERNAME }}/house-price-predictor:latest
 
 
             # -----------------------------------------------
             # Stop existing container
             # -----------------------------------------------
 
-            docker stop house-price-prediction || true
+            docker stop house-price-predictor || true
 
 
             # -----------------------------------------------
             # Remove existing container
             # -----------------------------------------------
 
-            docker rm house-price-prediction || true
+            docker rm  house-price-predictor || true
 
 
             # -----------------------------------------------
@@ -96,11 +96,11 @@ jobs:
             # -----------------------------------------------
 
             docker run -d \
-              --name house-price-prediction \
+              --name house-price-predictor \
               -p 8000:8000 \
               --add-host=host.docker.internal:host-gateway \
-              -e MLFLOW_TRACKING=http://host.docker.internal:5000 \
-              ${{ secrets.DOCKERHUB_USERNAME }}/house_price_prediction:latest
+              -e MLFLOW_TRACKING=http://host.docker.internal:5001 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/house-price-predictor:latest
 
 
             # -----------------------------------------------
@@ -121,7 +121,7 @@ jobs:
             # Show application logs
             # -----------------------------------------------
 
-            docker logs --tail 50 house_price_prediction
+            docker logs --tail 50 house-price-predictor
 
 
             # -----------------------------------------------

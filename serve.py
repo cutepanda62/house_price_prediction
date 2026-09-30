@@ -8,38 +8,171 @@ import pandas as pd
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel , Field
+from pydantic import BaseModel, Field
 
-BASE_DIR=Path(__file__).resolve().parent
-TRACKING_URI=os.getenv("MLFLOW_TRACKING","http://127.0.0.1:5000")
-MODEL_URI= "models:/house-price-predictor@champion"
-FEATURES=["sqft","bedrooms","bathrooms","age_years","garage","location_score"]
 
-mlflow.set_tracking_uri(TRACKING_URI)
-model=mlflow.sklearn.load_model(MODEL_URI)
+# ============================================================
+# Application Configuration
+# ============================================================
 
-app= FastAPI(title="House Price Predictor")
+BASE_DIR = Path(__file__).resolve().parent
+
+MLFLOW_TRACKING_URI = os.getenv(
+    "MLFLOW_TRACKING_URI",
+    "http://host.docker.internal:5001"
+)
+
+MODEL_URI = "models:/house-price-predictor@champion"
+
+
+# ============================================================
+# Model Features
+# ============================================================
+
+FEATURES = [
+    "sqft",
+    "bedrooms",
+    "bathrooms",
+    "age_years",
+    "garage",
+    "location_score"
+]
+
+
+# ============================================================
+# MLflow Configuration
+# ============================================================
+
+mlflow.set_tracking_uri(
+    MLFLOW_TRACKING_URI
+)
+
+
+# ============================================================
+# Load Model
+# ============================================================
+
+model = mlflow.sklearn.load_model(
+    MODEL_URI
+)
+
+
+# ============================================================
+# FastAPI Application
+# ============================================================
+
+app = FastAPI(
+    title="House Price Predictor",
+    description="MLflow + FastAPI House Price Prediction API",
+    version="1.0.0"
+)
+
+
+# ============================================================
+# Request Schema
+# ============================================================
 
 class HouseFeatures(BaseModel):
-    sqft: float = Field(..., gt=0 , le=20000)
-    bedrooms: int = Field(...,gt=0,le=20)
-    bathrooms: int = Field(...,gt=0,le=200)
-    age_years: int = Field(...,gt=0 , le=10)
-    location_score: int = Field(...,ge=1 , le=10)
-    
+
+    sqft: float = Field(
+        ...,
+        gt=0,
+        le=20000
+    )
+
+    bedrooms: int = Field(
+        ...,
+        gt=0,
+        le=20
+    )
+
+    bathrooms: float = Field(
+        ...,
+        gt=0,
+        le=20
+    )
+
+    age_years: int = Field(
+        ...,
+        ge=0,
+        le=200
+    )
+
+    garage: int = Field(
+        ...,
+        ge=0,
+        le=10
+    )
+
+    location_score: float = Field(
+        ...,
+        ge=1,
+        le=10
+    )
+
+
+# ============================================================
+# Health Check
+# ============================================================
 
 @app.get("/health")
 def health():
-    return {"status":"healthy","model":MODEL_URI}
+
+    return {
+        "status": "healthy",
+        "model": MODEL_URI,
+        "mlflow_tracking_uri": MLFLOW_TRACKING_URI
+    }
+
+
+# ============================================================
+# Prediction API
+# ============================================================
 
 @app.post("/predict")
-def perict(features:HouseFeatures):
-    input_df=pd.DataFrame([features.model_dump()],columns=FEATURES)
-    prediction = model.predict(input_df)[0]
-    return {"predicted_price": round(float(prediction), 2)}
-    
-app.mount("/static",StaticFiles(directory=BASE_DIR / "static"))
+def predict(
+    features: HouseFeatures
+):
+
+    input_data = features.model_dump()
+
+    input_df = pd.DataFrame(
+        [input_data],
+        columns=FEATURES
+    )
+
+    prediction = model.predict(
+        input_df
+    )[0]
+
+    return {
+        "predicted_price": round(
+            float(prediction),
+            2
+        )
+    }
+
+
+# ============================================================
+# Static Frontend
+# ============================================================
+
+STATIC_DIR = BASE_DIR / "static"
+
+app.mount(
+    "/static",
+    StaticFiles(directory=STATIC_DIR),
+    name="static"
+)
+
+
+# ============================================================
+# Frontend
+# ============================================================
 
 @app.get("/")
 def frontend():
-    return FileResponse(BASE_DIR / "static" / "index.html")
+
+    return FileResponse(
+        STATIC_DIR / "index.html"
+    )
