@@ -173,9 +173,10 @@ with mlflow.start_run() as run:
 
     # Register model
     mlflow.sklearn.log_model(
-        sk_model=model,
-        name="model",
-        registered_model_name="house-price-predictor"
+    sk_model=model,
+    name="model",
+    registered_model_name="house-price-predictor",
+    skops_trusted_types=["sklearn.tree._tree.Tree"]
     )
 
     # Find registered version
