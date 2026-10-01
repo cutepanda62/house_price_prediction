@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 MLFLOW_TRACKING_URI = os.getenv(
     "MLFLOW_TRACKING_URI",
-    "http://host.docker.internal:5001"
+    "http://13.48.169.158:5001"
 )
 
 MODEL_URI = "models:/house-price-predictor@champion"
